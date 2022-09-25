@@ -2,7 +2,32 @@
 
 The goal of this project is to build a native Macchina A0 firmware which can bridge BLE to ISOTP.
 
+# VW_Flash compatability
+
+Note: this is binary protocol incompatiable with https://github.com/Switchleg1/esp32-isotp-ble-bridge and does not work with VW_Flash.
+
+# Building
+
 This project is built using the ESP32 native toolchain ESP-IDF (based on FreeRTOS) and can be compiled using `idf.py build` (typically after `. $IDF_PATH/export.sh`). It can be flashed after building using `idf.py flash` and serial debugging logs can be viewed with `idf.py monitor`.
+
+```shell
+# install python3 and link it to python unversion binary in path
+brew install python@3.10
+export PATH="/opt/homebrew/opt/python/libexec/bin:$PATH"
+# clone + install esp-idf-v4.4.2
+git clone -b v4.4.2 --recursive https://github.com/espressif/esp-idf.git esp-idf-v4.4.2
+cd esp-idf-v4.4.2
+./install.sh
+cd ..
+# build esp32-isotp-ble-bridge
+cd esp32-isotp-ble-bridge
+export IDF_PATH="/Users/$USER/Desktop/esp-idf-v4.4.2"
+. $IDF_PATH/export.sh
+rm -rf build
+idf.py build
+```
+
+# Client
 
 Currently, the project works, with a simple example client in the `client` directory. 
 
