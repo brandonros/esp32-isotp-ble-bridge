@@ -2,4 +2,4 @@ cmake_minimum_required(VERSION 3.16)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-project(esp32_ble_flasher)
+project(esp32_isotp_ble_bridge)
