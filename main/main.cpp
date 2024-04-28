@@ -1,6 +1,7 @@
 // c++ deps
 #include <mutex>
 #include <queue>
+#include <stdarg.h>
 // arduino deps
 #include <Arduino.h>
 // esp32 deps
@@ -12,8 +13,8 @@
 #include <TaskScheduler.h>
 // git@github.com:brandonros/isotp-c.git
 #include <isotp.h>
-#include <can.h>
-#include <util.h>
+#include "can.h"
+#include "util.h"
 
 // protocol
 #define PROTOCOL_HEADER_SIZE 8
@@ -54,10 +55,14 @@ uint8_t can_rx_buf[8];
 
 // ISOTP user functions
 void isotp_user_debug(const char* format, ...) {
-  // TODO: log?
+  va_list args;          // Create a variable argument list
+  va_start(args, format); // Initialize the argument list with the provided format
+  Serial.printf(format, args); // Pass the argument list to Serial.vprintf
+  va_end(args);          // Clean up the argument list
 }
 
 int isotp_user_send_can(uint32_t arbitration_id, const uint8_t* data, uint8_t size) {
+  Serial.printf("isotp_user_send_can\n");
   int ret_val = can_send(arbitration_id, data, size);
   if (ret_val != ESP_OK) {
     Serial.printf("isotp_user_send_can: can_send ret_val = %08x\n", ret_val);
@@ -200,7 +205,7 @@ class ServerCallbacks: public BLEServerCallbacks {
   void onDisconnect(BLEServer* pServer) {
     Serial.println("onDisconnect");
     ble_state = WAITING_FOR_CLIENT;
-      // restart?
+    // restart?
     ESP.restart();
   }
 };
@@ -223,24 +228,30 @@ int tx_isotp_on_ble_rx(uint16_t request_arbitration_id, uint16_t reply_arbitrati
   Serial.printf("tx_isotp_on_ble_rx: sending to request_arbitration_id = %04x reply_arbitration_id = %04x msg_length = %04x...\n", request_arbitration_id, reply_arbitration_id, msg_length);
   IsoTpLinkContainer *link_container = find_link_container_by_request_arbitration_id(request_arbitration_id);
   // check if link is currently sending?
+  Serial.printf("waiting for link\n");
   for (;;) {
     if (link_container->isotp_link.send_status != ISOTP_SEND_STATUS_INPROGRESS) {
       break;
     }
     delay(1);
   }
+    Serial.printf("got link\n");
   // start sending
+    Serial.printf("isotp sending\n");
   int ret_val = isotp_send_with_id(&link_container->isotp_link, request_arbitration_id, msg, msg_length);
+      Serial.printf("isotp sent\n");
   if (ret_val != ISOTP_RET_OK) {
     Serial.printf("isotp_send_with_id: ret_val = %08x\n", ret_val);
   }
   // wait for sending all frames to finish?
+      Serial.printf("wait for all frames\n");
   for (;;) {
     if (link_container->isotp_link.send_status != ISOTP_SEND_STATUS_INPROGRESS) {
       break;
     }
     delay(1);
   }
+        Serial.printf("sent all frames\n");
   // check result
   return link_container->isotp_link.send_protocol_result;
 }
@@ -318,7 +329,8 @@ void isotp_receive_task_callback() {
 
 // scheduler + tasks
 Scheduler ts;
-Task can_rx_task(TASK_IMMEDIATE, TASK_FOREVER, &can_rx_task_callback, &ts, true);
+//Task can_rx_task(TASK_IMMEDIATE, TASK_FOREVER, &can_rx_task_callback, &ts, true);
+Task can_status_task(TASK_IMMEDIATE, TASK_FOREVER, &can_status_task_callback, &ts, true);
 Task isotp_poll_task(TASK_IMMEDIATE, TASK_FOREVER, &isotp_poll_task_callback, &ts, true);
 Task isotp_receive_task(TASK_IMMEDIATE, TASK_FOREVER, &isotp_receive_task_callback, &ts, true);
 

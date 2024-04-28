@@ -43,6 +43,7 @@ int can_init()
 
 int can_send(uint16_t arbitration_id, const uint8_t *buf, size_t size)
 {
+  Serial.printf("can_send\n");
   wait_for_lock(can_mtx);
   tx_message.identifier = arbitration_id;
   tx_message.flags = TWAI_MSG_FLAG_NONE;
@@ -103,4 +104,10 @@ void can_reset()
   }
   // unlock
   can_mtx.unlock();
+}
+
+void can_status_task_callback() {
+  uint32_t alerts;
+  twai_read_alerts(&alerts, portMAX_DELAY);
+  Serial.printf("alerts = %08x\n", alerts);
 }

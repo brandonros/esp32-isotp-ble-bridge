@@ -1,8 +1,15 @@
 #!/bin/bash
 set -e
-cd ~/Desktop/esp-idf-v5.1.3
-/opt/homebrew/opt/python@3.12/bin/python3.12 /Users/brandon/Desktop/esp-idf-v5.1.3/tools/idf_tools.py install
-/opt/homebrew/opt/python@3.12/bin/python3.12 /Users/brandon/Desktop/esp-idf-v5.1.3/tools/idf_tools.py install-python-env
+
+# git clone -b v4.4.7 --recursive https://github.com/espressif/esp-idf.git esp-idf-v4.4.7
+
+export IDF_PATH="/Users/brandon/Desktop/esp-idf-v4.4.7"
+export PIP_BREAK_SYSTEM_PACKAGES=1
+cd ~/Desktop/esp-idf-v4.4.7
+./install.sh
+#python tools/idf_tools.py install --help
+#python tools/idf_tools.py install-python-env
+. export.sh
+
 cd ~/Desktop/esp32-isotp-ble-bridge
-. /Users/brandon/Desktop/esp-idf-v5.1.3/export.sh
-idf.py build flash monitor
+idf.py -p /dev/tty.usbserial-023109E4 build flash monitor

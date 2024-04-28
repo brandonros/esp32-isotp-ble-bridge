@@ -7,6 +7,7 @@ void wait_for_lock(std::mutex &mtx) {
         if (mtx.try_lock()) {
             return;
         } else {
+            //Serial.printf("locked\n");
             delay(1);
         }
     }
