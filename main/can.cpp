@@ -3,11 +3,12 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "driver/gpio.h"
-#include "driver/can.h"
+#include "driver/twai.h"
+#include "util.h"
 
 static std::mutex can_mtx;
-static can_message_t tx_message;
-static can_message_t rx_message;
+static twai_message_t tx_message;
+static twai_message_t rx_message;
 
 int can_init()
 {
@@ -19,7 +20,7 @@ int can_init()
       .bus_off_io = TWAI_IO_UNUSED,
       .tx_queue_len = 32, // setting this above 5 yields poor results?
       .rx_queue_len = 32, // setting this above 5 yields poor results?
-      .alerts_enabled = TWAI_ALERT_NONE,
+      .alerts_enabled = TWAI_ALERT_RX_DATA | TWAI_ALERT_ABOVE_ERR_WARN | TWAI_ALERT_ERR_PASS | TWAI_ALERT_BUS_ERROR | TWAI_ALERT_BUS_OFF | TWAI_ALERT_TX_FAILED | TWAI_ALERT_RX_QUEUE_FULL,
       .clkout_divider = 0,
       .intr_flags = ESP_INTR_FLAG_LEVEL1
     };
@@ -42,11 +43,11 @@ int can_init()
 
 int can_send(uint16_t arbitration_id, const uint8_t *buf, size_t size)
 {
+  wait_for_lock(can_mtx);
   tx_message.identifier = arbitration_id;
-  tx_message.flags = CAN_MSG_FLAG_NONE;
+  tx_message.flags = TWAI_MSG_FLAG_NONE;
   tx_message.data_length_code = size;
   memcpy(tx_message.data, buf, size);
-  can_mtx.lock();
   int ret_val = twai_transmit(&tx_message, pdMS_TO_TICKS(1));
   can_mtx.unlock();
   return ret_val;
@@ -54,7 +55,7 @@ int can_send(uint16_t arbitration_id, const uint8_t *buf, size_t size)
 
 int can_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
 {
-    can_mtx.lock();
+    wait_for_lock(can_mtx);
     int ret_val = twai_receive(&rx_message, pdMS_TO_TICKS(1));
     can_mtx.unlock();
     if (ret_val == ESP_OK) {
@@ -68,9 +69,11 @@ int can_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
 void can_reset()
 {
   // lock
-  can_mtx.lock();
+  wait_for_lock(can_mtx);
   // stop
   twai_stop();
+  //twai_driver_uninstall();
+  //periph_module_reset(PERIPH_TWAI_MODULE);
   // wait for it to get back to running?
   for (;;)
   {
@@ -84,6 +87,7 @@ void can_reset()
     else if (status_info.state == TWAI_STATE_STOPPED)
     {
       Serial.printf("TWAI_STATE_STOPPED\n");
+      //twai_driver_install();
       twai_start();
     }
     else if (status_info.state == TWAI_STATE_RUNNING)

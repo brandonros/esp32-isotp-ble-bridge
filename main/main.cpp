@@ -13,6 +13,7 @@
 // git@github.com:brandonros/isotp-c.git
 #include <isotp.h>
 #include <can.h>
+#include <util.h>
 
 // protocol
 #define PROTOCOL_HEADER_SIZE 8
@@ -207,7 +208,7 @@ class ServerCallbacks: public BLEServerCallbacks {
 class CommandWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) {
     // lock
-    ble_command_mtx.lock();
+    wait_for_lock(ble_command_mtx);
     // process
     uint8_t *data = pCharacteristic->getData();
     size_t data_length = pCharacteristic->getLength();
