@@ -1,7 +1,6 @@
 idf_component_register(
   SRCS 
   "deps/isotp-c/isotp.c"
-  "util.cpp"
   "can.cpp"
   "main.cpp" 
   

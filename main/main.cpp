@@ -1,7 +1,6 @@
 // c++ deps
 #include <mutex>
 #include <queue>
-#include <stdarg.h>
 // arduino deps
 #include <Arduino.h>
 // esp32 deps
@@ -14,7 +13,6 @@
 // git@github.com:brandonros/isotp-c.git
 #include <isotp.h>
 #include "can.h"
-#include "util.h"
 
 // protocol
 #define PROTOCOL_HEADER_SIZE 8
@@ -55,10 +53,7 @@ uint8_t can_rx_buf[8];
 
 // ISOTP user functions
 void isotp_user_debug(const char* format, ...) {
-  va_list args;          // Create a variable argument list
-  va_start(args, format); // Initialize the argument list with the provided format
-  Serial.printf(format, args); // Pass the argument list to Serial.vprintf
-  va_end(args);          // Clean up the argument list
+  // TODO: no Serial.vprintf
 }
 
 int isotp_user_send_can(uint32_t arbitration_id, const uint8_t* data, uint8_t size) {
@@ -213,7 +208,7 @@ class ServerCallbacks: public BLEServerCallbacks {
 class CommandWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) {
     // lock
-    wait_for_lock(ble_command_mtx);
+    ble_command_mtx.lock();
     // process
     uint8_t *data = pCharacteristic->getData();
     size_t data_length = pCharacteristic->getLength();
@@ -329,8 +324,7 @@ void isotp_receive_task_callback() {
 
 // scheduler + tasks
 Scheduler ts;
-//Task can_rx_task(TASK_IMMEDIATE, TASK_FOREVER, &can_rx_task_callback, &ts, true);
-Task can_status_task(TASK_IMMEDIATE, TASK_FOREVER, &can_status_task_callback, &ts, true);
+Task can_rx_task(TASK_IMMEDIATE, TASK_FOREVER, &can_rx_task_callback, &ts, true);
 Task isotp_poll_task(TASK_IMMEDIATE, TASK_FOREVER, &isotp_poll_task_callback, &ts, true);
 Task isotp_receive_task(TASK_IMMEDIATE, TASK_FOREVER, &isotp_receive_task_callback, &ts, true);
 

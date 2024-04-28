@@ -4,7 +4,6 @@
 #include "freertos/semphr.h"
 #include "driver/gpio.h"
 #include "driver/twai.h"
-#include "util.h"
 
 static std::mutex can_mtx;
 static twai_message_t tx_message;
@@ -20,7 +19,8 @@ int can_init()
       .bus_off_io = TWAI_IO_UNUSED,
       .tx_queue_len = 32, // setting this above 5 yields poor results?
       .rx_queue_len = 32, // setting this above 5 yields poor results?
-      .alerts_enabled = TWAI_ALERT_RX_DATA | TWAI_ALERT_ABOVE_ERR_WARN | TWAI_ALERT_ERR_PASS | TWAI_ALERT_BUS_ERROR | TWAI_ALERT_BUS_OFF | TWAI_ALERT_TX_FAILED | TWAI_ALERT_RX_QUEUE_FULL,
+      //.alerts_enabled = TWAI_ALERT_RX_DATA | TWAI_ALERT_ABOVE_ERR_WARN | TWAI_ALERT_ERR_PASS | TWAI_ALERT_BUS_ERROR | TWAI_ALERT_BUS_OFF | TWAI_ALERT_TX_FAILED | TWAI_ALERT_RX_QUEUE_FULL,
+      .alerts_enabled = TWAI_ALERT_NONE,
       .clkout_divider = 0,
       .intr_flags = ESP_INTR_FLAG_LEVEL1
     };
@@ -44,7 +44,7 @@ int can_init()
 int can_send(uint16_t arbitration_id, const uint8_t *buf, size_t size)
 {
   Serial.printf("can_send\n");
-  wait_for_lock(can_mtx);
+  can_mtx.lock();
   tx_message.identifier = arbitration_id;
   tx_message.flags = TWAI_MSG_FLAG_NONE;
   tx_message.data_length_code = size;
@@ -56,7 +56,7 @@ int can_send(uint16_t arbitration_id, const uint8_t *buf, size_t size)
 
 int can_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
 {
-    wait_for_lock(can_mtx);
+    can_mtx.lock();
     int ret_val = twai_receive(&rx_message, pdMS_TO_TICKS(1));
     can_mtx.unlock();
     if (ret_val == ESP_OK) {
@@ -70,7 +70,7 @@ int can_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
 void can_reset()
 {
   // lock
-  wait_for_lock(can_mtx);
+  can_mtx.lock();
   // stop
   twai_stop();
   //twai_driver_uninstall();
@@ -104,10 +104,4 @@ void can_reset()
   }
   // unlock
   can_mtx.unlock();
-}
-
-void can_status_task_callback() {
-  uint32_t alerts;
-  twai_read_alerts(&alerts, portMAX_DELAY);
-  Serial.printf("alerts = %08x\n", alerts);
 }
