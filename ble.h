@@ -1,6 +1,7 @@
 #ifndef BLE_H
 #define BLE_H
 
+#include <mutex>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
@@ -30,6 +31,7 @@ static BLECharacteristic *pCommandWriteCharacteristic;
 static uint8_t *ble_tx_command_buf;
 static uint8_t *ble_rx_command_buf;
 static ble_states ble_state;
+extern std::mutex ble_command_mtx;
 
 void ble_setup();
 void process_ble_command(uint8_t *data, size_t data_length);

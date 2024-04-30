@@ -3,6 +3,8 @@
 #include "twai.h"
 #include "isotp_link_containers.h"
 
+#define REPLY_ARBITRATION_ID 0x7E8 // TODO: support more than just 1 arbitration ID through filters
+
 void twai_setup() {
   // transceiver silence workaround
   pinMode(GPIO_NUM_21, OUTPUT);
@@ -13,7 +15,7 @@ void twai_setup() {
   twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();  //Look in the api-reference for other speed sets.
   //twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
   twai_filter_config_t f_config = {
-    .acceptance_code = (0x7E8 << 21),
+    .acceptance_code = (REPLY_ARBITRATION_ID << 21),
     .acceptance_mask = ~(0x7FF << 21),
     .single_filter = true
 	};
@@ -43,7 +45,7 @@ void twai_setup() {
 }
 
 int twai_send(uint16_t arbitration_id, const uint8_t *buf, size_t size) {
-  assert(size == 8);
+  assert(size == CAN_FRAME_SIZE);
   tx_message.identifier = arbitration_id;
   tx_message.data_length_code = size;
   for (int i = 0; i < size; ++i) {
@@ -58,7 +60,7 @@ int twai_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
   if (ret_val == ESP_OK) {
     *arbitration_id = rx_message.identifier;
     *size = rx_message.data_length_code;
-    assert(*size == 8);
+    assert(*size == CAN_FRAME_SIZE);
     memcpy(buf, rx_message.data, rx_message.data_length_code);
   }
   return ret_val;
@@ -69,7 +71,7 @@ void twai_rx_task_callback() {
   size_t size = 0;
   int ret_val = twai_recv(&arbitration_id, twai_rx_buf, &size);
   if (ret_val == ESP_OK) {
-    if (arbitration_id == 0x7E8) {
+    if (arbitration_id == REPLY_ARBITRATION_ID) {
 #ifdef DEBUG      
       Serial.printf("Received CAN message: identifier = %08x data_length_code = %02x data=%02x%02x%02x%02x%02x%02x%02x%02x\n", arbitration_id, size, twai_rx_buf[0], twai_rx_buf[1], twai_rx_buf[2], twai_rx_buf[3], twai_rx_buf[4], twai_rx_buf[5], twai_rx_buf[6], twai_rx_buf[7]);
 #endif      
@@ -106,16 +108,16 @@ void twai_alerts_task_callback() {
   if (alerts_triggered & TWAI_ALERT_BUS_ERROR) {
     Serial.printf("TWAI_ALERT_BUS_ERROR\n");
     Serial.printf("Bus error count: %d\n", twaistatus.bus_error_count);
-    twai_initiate_recovery();
+    twai_initiate_recovery(); // TODO: not sure if this is right
   }
   if (alerts_triggered & TWAI_ALERT_BUS_OFF) {
     Serial.printf("TWAI_ALERT_BUS_OFF\n");
-    twai_initiate_recovery();
+    twai_initiate_recovery(); // TODO: not sure if this is right
   }
   if (alerts_triggered & TWAI_ALERT_BUS_RECOVERED) {
     Serial.printf("TWAI_ALERT_BUS_RECOVERED\n");
-    twai_clear_transmit_queue();
-    twai_clear_receive_queue();
+    twai_clear_transmit_queue(); // TODO: not sure if this is right
+    twai_clear_receive_queue(); // TODO: not sure if this is right
   }
   if (alerts_triggered & TWAI_ALERT_ERR_ACTIVE) {
     Serial.printf("TWAI_ALERT_ERR_ACTIVE\n");

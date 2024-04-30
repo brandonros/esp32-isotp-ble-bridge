@@ -1,10 +1,10 @@
 #include <stdint.h>
 #include "isotp_link_containers.h"
 
-IsoTpLinkContainer link_containers[4];
+IsoTpLinkContainer link_containers[NUM_LINK_CONTAINERS];
 
 IsoTpLinkContainer* find_link_container_by_request_arbitration_id(uint16_t request_arbitration_id) {
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < NUM_LINK_CONTAINERS; ++i) {
     if (link_containers[i].initialized == false) {
       continue;
     }
@@ -16,7 +16,7 @@ IsoTpLinkContainer* find_link_container_by_request_arbitration_id(uint16_t reque
 }
 
 IsoTpLinkContainer* find_link_container_by_reply_arbitration_id(uint16_t reply_arbitration_id) {
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < NUM_LINK_CONTAINERS; ++i) {
     if (link_containers[i].initialized == false) {
       continue;
     }

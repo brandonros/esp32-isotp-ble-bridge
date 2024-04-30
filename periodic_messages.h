@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define NUM_PERIODIC_MESSAGE_CONTAINERS 4
+#define MAX_PERIODIC_MESSAGE_SIZE 128 // TODO: support periodic messages higher than 128?
+
 typedef struct {
   bool active;
   uint16_t request_arbitration_id;
@@ -12,7 +15,7 @@ typedef struct {
   uint16_t msg_length;
 } PeriodicMessageContainer;
 
-extern PeriodicMessageContainer periodic_message_containers[4];
+extern PeriodicMessageContainer periodic_message_containers[NUM_PERIODIC_MESSAGE_CONTAINERS];
 
 void periodic_setup();
 void periodic_messages_task_callback();

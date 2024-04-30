@@ -7,13 +7,15 @@
 #define RX_PIN GPIO_NUM_4
 #define TX_PIN GPIO_NUM_5
 
+#define CAN_FRAME_SIZE 8
+
 void twai_setup();
 int twai_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size);
 void twai_rx_task_callback();
 int twai_send(uint16_t arbitration_id, const uint8_t *buf, size_t size);
 void twai_alerts_task_callback();
 
-static uint8_t twai_rx_buf[8];
+static uint8_t twai_rx_buf[CAN_FRAME_SIZE];
 
 static twai_message_t rx_message;
 static twai_message_t tx_message;

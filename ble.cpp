@@ -1,3 +1,4 @@
+#include <mutex>
 #include <Arduino.h>
 #include <isotp.h>
 #include "isotp_link_containers.h"
@@ -6,6 +7,8 @@
 #include "ble_isotp.h"
 #include "periodic_messages.h"
 #include "protocol.h"
+
+std::mutex ble_command_mtx;
 
 class ServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
@@ -26,13 +29,13 @@ class ServerCallbacks: public BLEServerCallbacks {
 class CommandWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) {
     // lock
-    //ble_command_mtx.lock();
+    ble_command_mtx.lock();
     // process
     uint8_t *data = pCharacteristic->getData();
     size_t data_length = pCharacteristic->getLength();
     process_ble_command(data, data_length);
     // unlock
-    //ble_command_mtx.unlock();
+    ble_command_mtx.unlock();
   }
 };
 
@@ -87,7 +90,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     // log
     Serial.printf("CONFIGURE_ISOTP_LINK: link_index = %02x request_arbitration_id = %08x reply_arbitration_id = %08x name_len = %08x name = %s\n", link_index, request_arbitration_id, reply_arbitration_id, name_len, name);
     // validate
-    assert(link_index < 4);
+    assert(link_index < NUM_LINK_CONTAINERS);
     // configure
     isotp_init_link(&link_containers[link_index].isotp_link, request_arbitration_id, link_containers[link_index].isotp_tx_buffer, ISOTP_BUFSIZE, link_containers[link_index].isotp_rx_buffer, ISOTP_BUFSIZE);
     link_containers[link_index].initialized = true;
@@ -100,7 +103,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     uint32_t chunk_length = read_uint16_be(data + 3);
     uint8_t *bytes = data + 5;
     // log
-    Serial.printf("UPLOAD_ISOTP_CHUNK chunk_offset = %04x chunk_length = %04x\n", chunk_offset, chunk_length);
+    Serial.printf("UPLOAD_ISOTP_CHUNK: chunk_offset = %04x chunk_length = %04x\n", chunk_offset, chunk_length);
     // copy
     memcpy(ble_rx_command_buf + chunk_offset, bytes, chunk_length);
     // TODO: send command success?
@@ -112,7 +115,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     uint16_t msg_length = payload_length - 8;
     uint8_t *msg = ble_rx_command_buf + 8;
     // log
-    Serial.printf("FLUSH_ISOTP_PAYLOAD payload_length = %04x request_arbitration_id = %08x reply_arbitration_id = %08x msg_length = %04x\n", payload_length, request_arbitration_id, reply_arbitration_id, msg_length);
+    Serial.printf("FLUSH_ISOTP_PAYLOAD: payload_length = %04x request_arbitration_id = %08x reply_arbitration_id = %08x msg_length = %04x\n", payload_length, request_arbitration_id, reply_arbitration_id, msg_length);
     // dispatch
     int ret_val = tx_isotp_on_ble_rx(request_arbitration_id, reply_arbitration_id, msg, msg_length);
     if (ret_val == ISOTP_SEND_STATUS_ERROR) {
@@ -121,7 +124,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     // TODO: send command success?
   } else if (ble_command_id == START_PERIODIC_MESSAGE) {
     uint8_t periodic_message_index = data[1];
-    assert(periodic_message_index < 4);
+    assert(periodic_message_index < NUM_LINK_CONTAINERS);
     uint16_t interval_ms = read_uint16_be(data + 2);
     uint32_t rx_address = read_uint32_be(data + 4);
     uint32_t tx_address = read_uint32_be(data + 8);
@@ -137,7 +140,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     // TODO: num_msgs is really only ever 1
     for (int i = 0; i < num_msgs; ++i) {
       uint16_t msg_length = read_uint16_be(data + pointer);
-      assert(msg_length < 128);
+      assert(msg_length < MAX_PERIODIC_MESSAGE_SIZE);
       pointer += 2;
       periodic_message_containers[periodic_message_index].msg_length = msg_length;
       memcpy(periodic_message_containers[periodic_message_index].msg, data + pointer, msg_length);
@@ -146,7 +149,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     // TODO: send command success?
   } else if (ble_command_id == STOP_PERIODIC_MESSAGE) {
     uint8_t periodic_message_index = data[1];
-    assert(periodic_message_index < 4);
+    assert(periodic_message_index < NUM_LINK_CONTAINERS);
     uint32_t rx_address = read_uint32_be(data + 2);
     uint32_t tx_address = read_uint32_be(data + 6);
     Serial.printf("STOP_PERIODIC_MESSAGE: periodic_message_index = %d rx_address = %08x tx_address = %08x\n", periodic_message_index, rx_address, tx_address);

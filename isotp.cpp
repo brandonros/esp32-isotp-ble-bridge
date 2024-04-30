@@ -4,7 +4,7 @@
 #include "ble_isotp.h"
 
 void isotp_poll_task_callback() {
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < NUM_LINK_CONTAINERS; ++i) {
     // skip uninitialized links
     if (link_containers[i].initialized == false) {
       continue;
@@ -15,7 +15,7 @@ void isotp_poll_task_callback() {
 }
 
 void isotp_receive_task_callback() {
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < NUM_LINK_CONTAINERS; ++i) {
     // skip uninitialized links
     if (link_containers[i].initialized == false) {
       continue;
@@ -38,7 +38,7 @@ void isotp_setup() {
   assert(isotp_payload_buffer != NULL);
   memset(isotp_payload_buffer, 0, ISOTP_BUFSIZE);
 
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < NUM_LINK_CONTAINERS; ++i) {
     link_containers[i].initialized = false;
 
     link_containers[i].isotp_rx_buffer = (uint8_t*)malloc(ISOTP_BUFSIZE);
