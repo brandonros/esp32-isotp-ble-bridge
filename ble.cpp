@@ -13,13 +13,13 @@ std::mutex ble_command_mtx;
 class ServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
     Serial.printf("onConnect\n");
-    if (ble_state == WAITING_FOR_CLIENT) {
-      ble_state = HAVE_CLIENT;
-    }
+    assert(ble_state == WAITING_FOR_CLIENT);
+    ble_state = HAVE_CLIENT;
   };
 
   void onDisconnect(BLEServer* pServer) {
     Serial.printf("onDisconnect\n");
+    assert(ble_state == HAVE_CLIENT);
     ble_state = WAITING_FOR_CLIENT;
     // restart?
     ESP.restart();
@@ -86,7 +86,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     pointer += 4;
     uint32_t name_len = read_uint32_be(data + pointer);
     pointer += 4;
-    char *name = (char*)(data + pointer);
+    char *name = (char*)(data + pointer); // should include \0
     // log
     Serial.printf("CONFIGURE_ISOTP_LINK: link_index = %02x request_arbitration_id = %08x reply_arbitration_id = %08x name_len = %08x name = %s\n", link_index, request_arbitration_id, reply_arbitration_id, name_len, name);
     // validate
