@@ -4,15 +4,20 @@
 #include "twai.h"
 
 void isotp_user_debug(const char* format, ...) {
-  // TODO: no Serial.vprintf
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
 }
 
 int isotp_user_send_can(uint32_t arbitration_id, const uint8_t* data, uint8_t size) {
-  /*Serial.printf("isotp_user_send_can ");
+#ifdef DEBUG
+  Serial.printf("isotp_user_send_can ");
   for (int i = 0; i < size; ++i) {
     Serial.printf("%02x", data[i]);
   }
-  Serial.printf("\n");*/
+  Serial.printf("\n");
+#endif
   int ret_val = twai_send(arbitration_id, data, size);
   if (ret_val != ESP_OK) {
     Serial.printf("isotp_user_send_can: can_send ret_val = %08x\n", ret_val);

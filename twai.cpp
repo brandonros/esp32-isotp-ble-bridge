@@ -70,7 +70,9 @@ void twai_rx_task_callback() {
   int ret_val = twai_recv(&arbitration_id, twai_rx_buf, &size);
   if (ret_val == ESP_OK) {
     if (arbitration_id == 0x7E8) {
-      //Serial.printf("Received CAN message: identifier = %08x data_length_code = %02x data=%02x%02x%02x%02x%02x%02x%02x%02x\n", arbitration_id, size, twai_rx_buf[0], twai_rx_buf[1], twai_rx_buf[2], twai_rx_buf[3], twai_rx_buf[4], twai_rx_buf[5], twai_rx_buf[6], twai_rx_buf[7]);
+#ifdef DEBUG      
+      Serial.printf("Received CAN message: identifier = %08x data_length_code = %02x data=%02x%02x%02x%02x%02x%02x%02x%02x\n", arbitration_id, size, twai_rx_buf[0], twai_rx_buf[1], twai_rx_buf[2], twai_rx_buf[3], twai_rx_buf[4], twai_rx_buf[5], twai_rx_buf[6], twai_rx_buf[7]);
+#endif      
       IsoTpLinkContainer *link_container = find_link_container_by_reply_arbitration_id(arbitration_id);
       assert(link_container != NULL);
       isotp_on_can_message(&link_container->isotp_link, twai_rx_buf, size);
@@ -125,7 +127,9 @@ void twai_alerts_task_callback() {
     Serial.printf("TWAI_ALERT_RECOVERY_IN_PROGRESS\n");
   }
   if (alerts_triggered & TWAI_ALERT_RX_DATA) {
-    //Serial.printf("TWAI_ALERT_RX_DATA\n");
+#ifdef DEBUG
+    Serial.printf("TWAI_ALERT_RX_DATA\n");
+#endif
   }
   if (alerts_triggered & TWAI_ALERT_RX_QUEUE_FULL) {
     Serial.printf("TWAI_ALERT_RX_QUEUE_FULL\n");
@@ -137,10 +141,14 @@ void twai_alerts_task_callback() {
     Serial.printf("TX failed: %d\n", twaistatus.tx_failed_count);
   }
   if (alerts_triggered & TWAI_ALERT_TX_IDLE) {
-    //Serial.printf("TWAI_ALERT_TX_IDLE\n");
+#ifdef DEBUG    
+    Serial.printf("TWAI_ALERT_TX_IDLE\n");
+#endif
   }
   if (alerts_triggered & TWAI_ALERT_TX_SUCCESS) {
-    //Serial.printf("TWAI_ALERT_TX_SUCCESS\n");
-    //Serial.printf("TX buffered: %d\n", twaistatus.msgs_to_tx);
+#ifdef DEBUG    
+    Serial.printf("TWAI_ALERT_TX_SUCCESS\n");
+    Serial.printf("TX buffered: %d\n", twaistatus.msgs_to_tx);
+#endif    
   }
 }

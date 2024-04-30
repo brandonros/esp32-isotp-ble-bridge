@@ -1,4 +1,4 @@
-#include "math.h"
+#include "utilities.h"
 
 void write_uint32_be(uint32_t value, uint8_t *output) {
   output[3] = value & 0xFF;

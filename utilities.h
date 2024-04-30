@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef UTILITIES_H
+#define UTILITIES_H
 
 #include <stdint.h>
 

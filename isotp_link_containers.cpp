@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "isotp_link_containers.h"
 
+IsoTpLinkContainer link_containers[4];
+
 IsoTpLinkContainer* find_link_container_by_request_arbitration_id(uint16_t request_arbitration_id) {
   for (int i = 0; i < 4; ++i) {
     if (link_containers[i].initialized == false) {

@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <isotp.h>
 #include "isotp_link_containers.h"
-#include "math.h"
+#include "utilities.h"
 #include "ble.h"
 #include "ble_isotp.h"
 #include "periodic_messages.h"

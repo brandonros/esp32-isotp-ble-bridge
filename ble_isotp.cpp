@@ -3,18 +3,18 @@
 #include "ble_isotp.h"
 #include "isotp_link_containers.h"
 #include "ble.h"
-#include "math.h"
+#include "utilities.h"
 
 int tx_isotp_on_ble_rx(uint16_t request_arbitration_id, uint16_t reply_arbitration_id, uint8_t *msg, uint16_t msg_length) {
   Serial.printf("tx_isotp_on_ble_rx: sending to request_arbitration_id = %04x reply_arbitration_id = %04x msg_length = %04x...\n", request_arbitration_id, reply_arbitration_id, msg_length);
   IsoTpLinkContainer *link_container = find_link_container_by_request_arbitration_id(request_arbitration_id);
+  assert(link_container != NULL);
   // check if link is currently sending?
   for (;;) {
     if (link_container->isotp_link.send_status != ISOTP_SEND_STATUS_INPROGRESS) {
       break;
     }
-    //delay(1);
-    yield();
+    delay(1);
   }
   // start sending
   int ret_val = isotp_send_with_id(&link_container->isotp_link, request_arbitration_id, msg, msg_length);
@@ -26,8 +26,7 @@ int tx_isotp_on_ble_rx(uint16_t request_arbitration_id, uint16_t reply_arbitrati
     if (link_container->isotp_link.send_status != ISOTP_SEND_STATUS_INPROGRESS) {
       break;
     }
-    //delay(1);
-    yield();
+    delay(1);
   }
   // check result
   return link_container->isotp_link.send_protocol_result;

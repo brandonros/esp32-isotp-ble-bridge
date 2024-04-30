@@ -4,9 +4,11 @@
 #include "twai.h"
 #include "periodic_messages.h"
 #include "isotp_link_containers.h"
-#include "math.h"
+#include "utilities.h"
 #include "isotp.h"
 #include "ble_isotp.h"
+
+#define DEBUG
 
 // ISOTP
 #define ISO_TP_DEFAULT_ST_MIN_US 0 // TODO: higher
@@ -19,10 +21,8 @@
 Scheduler ts;
 Task twai_alerts_task(TASK_IMMEDIATE, TASK_FOREVER, &twai_alerts_task_callback, &ts, true);
 Task twai_rx_task(TASK_IMMEDIATE, TASK_FOREVER, &twai_rx_task_callback, &ts, true);
-
 Task isotp_poll_task(TASK_IMMEDIATE, TASK_FOREVER, &isotp_poll_task_callback, &ts, true);
 Task isotp_receive_task(TASK_IMMEDIATE, TASK_FOREVER, &isotp_receive_task_callback, &ts, true);
-
 Task periodic_messages_task(TASK_IMMEDIATE, TASK_FOREVER, &periodic_messages_task_callback, &ts, true);
 
 void setup() {

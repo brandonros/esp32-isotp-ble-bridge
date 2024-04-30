@@ -2,6 +2,8 @@
 #include "periodic_messages.h"
 #include "ble_isotp.h"
 
+PeriodicMessageContainer periodic_message_containers[4];
+
 void periodic_messages_task_callback() {
   for (int i = 0; i < 4; ++i) {
     PeriodicMessageContainer periodic_message_container = periodic_message_containers[i];
@@ -16,6 +18,8 @@ void periodic_messages_task_callback() {
 void periodic_setup() {
   for (int i = 0; i < 4; ++i) {
     periodic_message_containers[i].active = false;
+    periodic_message_containers[i].msg = (uint8_t*)malloc(128); // TODO: support periodic messages higher than 128?
+    assert(periodic_message_containers[i].msg != NULL);
     memset(periodic_message_containers[i].msg, 0, 128);
   }
 }

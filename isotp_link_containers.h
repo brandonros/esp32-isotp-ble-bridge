@@ -14,7 +14,7 @@ typedef struct {
   uint8_t *isotp_tx_buffer;
 } IsoTpLinkContainer;
 
-static IsoTpLinkContainer link_containers[4];
+extern IsoTpLinkContainer link_containers[4];
 
 IsoTpLinkContainer* find_link_container_by_request_arbitration_id(uint16_t request_arbitration_id);
 IsoTpLinkContainer* find_link_container_by_reply_arbitration_id(uint16_t reply_arbitration_id);
