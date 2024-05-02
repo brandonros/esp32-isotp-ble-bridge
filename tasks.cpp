@@ -124,6 +124,14 @@ void twai_alerts_task_callback() {
   if (alerts_triggered & TWAI_ALERT_BUS_ERROR) {
     Serial.printf("TWAI_ALERT_BUS_ERROR\n");
     Serial.printf("Bus error count: %d\n", twaistatus.bus_error_count);
+    // TODO: not sure what to do here
+    /*if (twaistatus.bus_error_count > 256) {
+      twai_clear_transmit_queue(); // TODO: not sure if this is right
+      twai_clear_receive_queue(); // TODO: not sure if this is right
+      twai_driver_uninstall();
+      twai_stop();
+      twai_initiate_recovery();
+    }*/
   }
   if (alerts_triggered & TWAI_ALERT_BUS_OFF) {
     Serial.printf("TWAI_ALERT_BUS_OFF\n");
