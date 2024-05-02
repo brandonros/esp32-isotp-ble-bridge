@@ -5,6 +5,7 @@
 #include "tasks.h"
 #include "twai.h"
 #include "ble_isotp.h"
+#include "isotp.h"
 
 Scheduler ts;
 Task twai_alerts_task(TASK_IMMEDIATE, TASK_FOREVER, &twai_alerts_task_callback, &ts, true);
@@ -56,6 +57,7 @@ void isotp_receive_task_callback() {
     // receive
     unsigned long start_us = micros();
     uint16_t out_size = 0;
+    assert(isotp_payload_buffer != NULL);
     int isotp_receive_ret_val = isotp_receive(&link_containers[i].isotp_link, isotp_payload_buffer, ISOTP_BUFSIZE, &out_size);
     unsigned long end_us = micros();
     unsigned long time_spent_ms = (end_us - start_us) / 1000;

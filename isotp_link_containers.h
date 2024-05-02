@@ -2,7 +2,7 @@
 #define ISOTP_LINK_CONTAINERS_H
 
 #include <stdint.h>
-#include <isotp.h>
+#include "isotp-c/isotp.h"
 #include "isotp.h"
 
 #define NUM_LINK_CONTAINERS 4

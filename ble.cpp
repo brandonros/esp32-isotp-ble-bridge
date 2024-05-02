@@ -1,6 +1,6 @@
 #include <mutex>
 #include <Arduino.h>
-#include <isotp.h>
+#include "isotp-c/isotp.h"
 #include "isotp_link_containers.h"
 #include "utilities.h"
 #include "ble.h"
@@ -8,6 +8,13 @@
 #include "periodic_messages.h"
 #include "protocol.h"
 
+BLEServer *pServer;
+BLEService *pService;
+BLECharacteristic *pDataNotifyCharacteristic;
+BLECharacteristic *pCommandWriteCharacteristic;
+uint8_t *ble_tx_command_buf;
+uint8_t *ble_rx_command_buf;
+ble_states ble_state;
 std::mutex ble_command_mtx;
 
 class ServerCallbacks: public BLEServerCallbacks {
@@ -92,6 +99,8 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     // validate
     assert(link_index < NUM_LINK_CONTAINERS);
     // configure
+    assert(link_containers[link_index].isotp_rx_buffer != NULL);
+    assert(link_containers[link_index].isotp_tx_buffer != NULL);
     isotp_init_link(&link_containers[link_index].isotp_link, request_arbitration_id, link_containers[link_index].isotp_tx_buffer, ISOTP_BUFSIZE, link_containers[link_index].isotp_rx_buffer, ISOTP_BUFSIZE);
     link_containers[link_index].initialized = true;
     link_containers[link_index].request_arbitration_id = request_arbitration_id;

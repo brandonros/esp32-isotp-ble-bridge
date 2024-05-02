@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <isotp.h>
+#include "isotp-c/isotp.h"
 #include "ble_isotp.h"
 #include "isotp_link_containers.h"
 #include "ble.h"

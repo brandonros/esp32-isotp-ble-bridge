@@ -3,6 +3,13 @@
 #include "twai.h"
 #include "isotp_link_containers.h"
 
+std::mutex can_mtx;
+
+uint8_t twai_rx_buf[CAN_FRAME_SIZE];
+
+twai_message_t rx_message;
+twai_message_t tx_message;
+
 void twai_setup() {
   // transceiver silence workaround
   pinMode(GPIO_NUM_21, OUTPUT);
@@ -47,17 +54,21 @@ void twai_setup() {
 }
 
 int twai_send(uint16_t arbitration_id, const uint8_t *buf, size_t size) {
+  can_mtx.lock();
   assert(size == CAN_FRAME_SIZE);
   tx_message.identifier = arbitration_id;
   tx_message.data_length_code = size;
   for (int i = 0; i < size; ++i) {
     tx_message.data[i] = buf[i];
   }
-  return twai_transmit(&tx_message, TWAI_SEND_MS > 0 ? pdMS_TO_TICKS(TWAI_SEND_MS) : 0);
+  int ret_val = twai_transmit(&tx_message, TWAI_SEND_MS > 0 ? pdMS_TO_TICKS(TWAI_SEND_MS) : 0);
+  can_mtx.unlock();
+  return ret_val;
 }
 
 int twai_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
 {
+  can_mtx.lock();
   int ret_val = twai_receive(&rx_message, TWAI_RECEIVE_MS > 0 ? pdMS_TO_TICKS(TWAI_RECEIVE_MS) : 0);
   if (ret_val == ESP_OK) {
     *arbitration_id = rx_message.identifier;
@@ -65,5 +76,6 @@ int twai_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size)
     assert(*size == CAN_FRAME_SIZE);
     memcpy(buf, rx_message.data, rx_message.data_length_code);
   }
+  can_mtx.unlock();
   return ret_val;
 }

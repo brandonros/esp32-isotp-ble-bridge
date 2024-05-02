@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <stdint.h>
-#include <isotp.h>
+#include "isotp-c/isotp.h"
 #include "twai.h"
 
 void isotp_user_debug(const char* format, ...) {

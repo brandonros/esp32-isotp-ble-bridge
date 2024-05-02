@@ -3,6 +3,8 @@
 #include "isotp_link_containers.h"
 #include "ble_isotp.h"
 
+uint8_t *isotp_payload_buffer;
+
 void isotp_setup() {
   isotp_payload_buffer = (uint8_t*)malloc(ISOTP_BUFSIZE);
   assert(isotp_payload_buffer != NULL);

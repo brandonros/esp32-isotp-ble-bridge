@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <TaskScheduler.h>
 #include "protocol.h"
 #include "ble.h"

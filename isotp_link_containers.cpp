@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <stdint.h>
 #include "isotp_link_containers.h"
 

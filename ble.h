@@ -24,13 +24,13 @@ enum ble_command_ids {
   STOP_PERIODIC_MESSAGE = 0x05,
   CONFIGURE_ISOTP_LINK = 0x06
 };
-static BLEServer *pServer;
-static BLEService *pService;
-static BLECharacteristic *pDataNotifyCharacteristic;
-static BLECharacteristic *pCommandWriteCharacteristic;
-static uint8_t *ble_tx_command_buf;
-static uint8_t *ble_rx_command_buf;
-static ble_states ble_state;
+extern BLEServer *pServer;
+extern BLEService *pService;
+extern BLECharacteristic *pDataNotifyCharacteristic;
+extern BLECharacteristic *pCommandWriteCharacteristic;
+extern uint8_t *ble_tx_command_buf;
+extern uint8_t *ble_rx_command_buf;
+extern ble_states ble_state;
 extern std::mutex ble_command_mtx;
 
 void ble_setup();

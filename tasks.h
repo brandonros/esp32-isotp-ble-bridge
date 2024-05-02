@@ -1,6 +1,7 @@
 #ifndef TASKS_H
 #define TASKS_H
 
+#define TASK_THREAD_SAFE
 #define _TASK_INLINE
 #include <TaskScheduler.h>
 
