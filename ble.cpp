@@ -117,7 +117,7 @@ void process_ble_command(uint8_t *data, size_t data_length) {
     // log
     Serial.printf("FLUSH_ISOTP_PAYLOAD: payload_length = %04x request_arbitration_id = %08x reply_arbitration_id = %08x msg_length = %04x\n", payload_length, request_arbitration_id, reply_arbitration_id, msg_length);
     // dispatch
-    int ret_val = tx_isotp_on_ble_rx(request_arbitration_id, reply_arbitration_id, msg, msg_length);
+    int ret_val = tx_isotp_on_ble_rx(request_arbitration_id, reply_arbitration_id, msg, msg_length, NULL); // TODO: we aren't running in a task?
     if (ret_val == ISOTP_SEND_STATUS_ERROR) {
       Serial.printf("ISOTP_SEND_STATUS_ERROR\n");
     }

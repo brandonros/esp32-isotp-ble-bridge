@@ -19,8 +19,14 @@ void periodic_messages_task_callback() {
     if (periodic_message_container.active == false) {
       continue;
     }
-    tx_isotp_on_ble_rx(periodic_message_container.request_arbitration_id, periodic_message_container.reply_arbitration_id, periodic_message_container.msg, periodic_message_container.msg_length);
-    periodic_messages_task.delay(periodic_message_container.interval_ms);
+    unsigned long start_us = micros();
+    tx_isotp_on_ble_rx(periodic_message_container.request_arbitration_id, periodic_message_container.reply_arbitration_id, periodic_message_container.msg, periodic_message_container.msg_length, &periodic_messages_task);
+    unsigned long end_us = micros();
+    unsigned long time_spent_ms = (end_us - start_us) / 1000;
+#ifdef DEBUG
+    Serial.printf("periodic_messages_task_callback: tx_isotp_on_ble_rx time_spent_ms = %lu\n", time_spent_ms);
+#endif
+    periodic_messages_task.delay(periodic_message_container.interval_ms - time_spent_ms);
   }
 }
 
@@ -31,7 +37,13 @@ void isotp_poll_task_callback() {
       continue;
     }
     // poll
+    unsigned long start_us = micros();
     isotp_poll(&link_containers[i].isotp_link);
+    unsigned long end_us = micros();
+    unsigned long time_spent_ms = (end_us - start_us) / 1000;
+#ifdef DEBUG
+    Serial.printf("isotp_poll_task_callback: isotp_poll time_spent_ms = %lu\n", time_spent_ms);
+#endif
   }
 }
 
@@ -42,10 +54,22 @@ void isotp_receive_task_callback() {
       continue;
     }
     // receive
+    unsigned long start_us = micros();
     uint16_t out_size = 0;
     int isotp_receive_ret_val = isotp_receive(&link_containers[i].isotp_link, isotp_payload_buffer, ISOTP_BUFSIZE, &out_size);
+    unsigned long end_us = micros();
+    unsigned long time_spent_ms = (end_us - start_us) / 1000;
+#ifdef DEBUG
+    Serial.printf("isotp_receive_task_callback: isotp_receive time_spent_ms = %lu\n", time_spent_ms);
+#endif        
     if (isotp_receive_ret_val == ISOTP_RET_OK) {
-      tx_ble_on_isotp_rx(link_containers[i].request_arbitration_id, link_containers[i].reply_arbitration_id, isotp_payload_buffer, out_size);
+      unsigned long start_us = micros();
+      tx_ble_on_isotp_rx(link_containers[i].request_arbitration_id, link_containers[i].reply_arbitration_id, isotp_payload_buffer, out_size, &isotp_receive_task);
+      unsigned long end_us = micros();
+      unsigned long time_spent_ms = (end_us - start_us) / 1000;
+#ifdef DEBUG
+      Serial.printf("isotp_receive_task_callback: tx_ble_on_isotp_rx time_spent_ms = %lu\n", time_spent_ms);
+#endif         
     } else if (isotp_receive_ret_val == ISOTP_RET_NO_DATA) {
       // expected timeout trying to read (no data available?)
     } else {
