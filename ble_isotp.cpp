@@ -14,7 +14,7 @@ int tx_isotp_on_ble_rx(uint16_t request_arbitration_id, uint16_t reply_arbitrati
     if (link_container->isotp_link.send_status != ISOTP_SEND_STATUS_INPROGRESS) {
       break;
     }
-    delay(1);
+    delay(1); // TODO: Task::delay?
   }
   // start sending
   int ret_val = isotp_send_with_id(&link_container->isotp_link, request_arbitration_id, msg, msg_length);
@@ -26,7 +26,7 @@ int tx_isotp_on_ble_rx(uint16_t request_arbitration_id, uint16_t reply_arbitrati
     if (link_container->isotp_link.send_status != ISOTP_SEND_STATUS_INPROGRESS) {
       break;
     }
-    delay(1);
+    delay(1); // TODO: Task::delay?
   }
   // check result
   return link_container->isotp_link.send_protocol_result;
@@ -44,5 +44,5 @@ void tx_ble_on_isotp_rx(uint16_t rx_id, uint16_t tx_id, uint8_t *buffer, uint16_
   pDataNotifyCharacteristic->setValue(ble_tx_command_buf, len + 8);
   pDataNotifyCharacteristic->notify();
   // sleep to prevent bluetooth congestion?
-  delay(10);
+  delay(10); // TODO: Task::delay?
 }

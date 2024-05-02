@@ -18,6 +18,5 @@ typedef struct {
 extern PeriodicMessageContainer periodic_message_containers[NUM_PERIODIC_MESSAGE_CONTAINERS];
 
 void periodic_setup();
-void periodic_messages_task_callback();
 
 #endif

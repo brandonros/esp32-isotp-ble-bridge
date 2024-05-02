@@ -9,11 +9,15 @@
 
 #define CAN_FRAME_SIZE 8
 
+#define TWAI_SEND_MS 0 // TODO: really not sure what to do here
+#define TWAI_RECEIVE_MS 0 // TODO: really not sure what to do here
+#define TWAI_READ_ALERTS_MS 1 // TODO: really not sure what to do here
+
+#define REPLY_ARBITRATION_ID 0x7E8 // TODO: support more than just 1 arbitration ID through filters
+
 void twai_setup();
 int twai_recv(uint16_t *arbitration_id, uint8_t *buf, size_t *size);
-void twai_rx_task_callback();
 int twai_send(uint16_t arbitration_id, const uint8_t *buf, size_t size);
-void twai_alerts_task_callback();
 
 static uint8_t twai_rx_buf[CAN_FRAME_SIZE];
 
